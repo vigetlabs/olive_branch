@@ -8,11 +8,11 @@ This gem lets your API users pass in and receive camelCased or dash-cased keys, 
 
 1. Add this to your Gemfile and then `bundle install`:
 
-    gem "olive_branch"
+        gem "olive_branch"
 
 2. Add this to `config/applcation.rb`:
 
-    config.middleware.use "OliveBranch::Middleware"
+        config.middleware.use "OliveBranch::Middleware"
 
 ## Use
 
