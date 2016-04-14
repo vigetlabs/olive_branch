@@ -15,15 +15,18 @@ module OliveBranch
 
       if inflection && headers["Content-Type"] =~ /application\/json/
         response.each do |body|
-          new_response = JSON.parse(body)
+          begin
+            new_response = JSON.parse(body)
 
-          if inflection == "camel"
-            new_response.deep_transform_keys! { |k| k.camelize(:lower) }
-          elsif inflection == "dash"
-            new_response.deep_transform_keys!(&:dasherize)
+            if inflection == "camel"
+              new_response.deep_transform_keys! { |k| k.camelize(:lower) }
+            elsif inflection == "dash"
+              new_response.deep_transform_keys!(&:dasherize)
+            end
+
+            body.replace(new_response.to_json)
+          rescue JSON::ParserError
           end
-
-          body.replace(new_response.to_json)
         end
       end
 
