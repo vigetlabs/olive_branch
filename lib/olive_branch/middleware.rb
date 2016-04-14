@@ -14,18 +14,20 @@ module OliveBranch
       status, headers, response = @app.call(env)
 
       if inflection && headers["Content-Type"] =~ /application\/json/
-        new_response = JSON.parse(response.body)
+        response.each do |body|
+          new_response = JSON.parse(body)
 
-        if inflection == "camel"
-          new_response.deep_transform_keys! { |k| k.camelize(:lower) }
-        elsif inflection == "dash"
-          new_response.deep_transform_keys!(&:dasherize)
+          if inflection == "camel"
+            new_response.deep_transform_keys! { |k| k.camelize(:lower) }
+          elsif inflection == "dash"
+            new_response.deep_transform_keys!(&:dasherize)
+          end
+
+          body.replace(new_response.to_json)
         end
-
-        [status, headers, [new_response.to_json]]
-      else
-        [status, headers, response]
       end
+
+      [status, headers, response]
     end
   end
 end
