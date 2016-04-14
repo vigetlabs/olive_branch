@@ -11,12 +11,14 @@ module OliveBranch
         env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
       end
 
-      status, headers, response = @app.call(env)
-
-      if inflection && headers["Content-Type"] =~ /application\/json/
-        response.each do |body|
-          begin
-            new_response = JSON.parse(body)
+      @app.call(env).tap do |_status, headers, response|
+        if inflection && headers["Content-Type"] =~ /application\/json/
+          response.each do |body|
+            begin
+              new_response = JSON.parse(body)
+            rescue JSON::ParserError
+              next
+            end
 
             if inflection == "camel"
               new_response.deep_transform_keys! { |k| k.camelize(:lower) }
@@ -25,12 +27,9 @@ module OliveBranch
             end
 
             body.replace(new_response.to_json)
-          rescue JSON::ParserError
           end
         end
       end
-
-      [status, headers, response]
     end
   end
 end
