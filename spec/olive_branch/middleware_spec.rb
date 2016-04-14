@@ -128,5 +128,21 @@ RSpec.describe OliveBranch::Middleware do
 
       expect(JSON.parse(response.body)["post"]["author_name"]).not_to be_nil
     end
+
+    it "does not modify response if invalid JSON" do
+      app = -> (env) do
+        [
+          200,
+          { "Content-Type" => "application/json" },
+          ['{"post":{"author_name":"Adam Smith"}']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get("/", "HTTP_KEY_INFLECTION" => "camel")
+
+      expect(response.body =~ /author_name/).not_to be_nil
+    end
   end
 end
