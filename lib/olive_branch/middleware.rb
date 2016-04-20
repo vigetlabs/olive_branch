@@ -5,7 +5,7 @@ module OliveBranch
     end
 
     def call(env)
-      inflection = env["HTTP_KEY_INFLECTION"]
+      inflection = env["HTTP_X_KEY_INFLECTION"]
 
       if inflection && env["CONTENT_TYPE"] =~ /application\/json/
         env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)

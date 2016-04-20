@@ -16,7 +16,7 @@ This gem lets your API users pass in and receive camelCased or dash-cased keys, 
 
 ## Use
 
-Include a `Key-Inflection` header with values of `camel`, `dash`, or `snake` in your JSON API requests.
+Include a `X-Key-Inflection` header with values of `camel`, `dash`, or `snake` in your JSON API requests.
 
 
 * * *
