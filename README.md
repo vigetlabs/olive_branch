@@ -18,6 +18,8 @@ This gem lets your API users pass in and receive camelCased or dash-cased keys, 
 
 Include a `X-Key-Inflection` header with values of `camel`, `dash`, or `snake` in your JSON API requests.
 
+For more examples, see [our blog post](https://www.viget.com/articles/introducing-olivebranch).
+
 
 * * *
 
