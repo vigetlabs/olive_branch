@@ -8,7 +8,7 @@ module OliveBranch
       inflection = env["HTTP_X_KEY_INFLECTION"]
 
       if inflection && env["CONTENT_TYPE"] =~ /application\/json/
-        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
+        JSON.parse(env['request.body'])
       end
 
       @app.call(env).tap do |_status, headers, response|
