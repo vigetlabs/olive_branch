@@ -8,7 +8,7 @@ module OliveBranch
       inflection = env["HTTP_X_KEY_INFLECTION"]
 
       if inflection && env["CONTENT_TYPE"] =~ /application\/json/
-        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
+        underscore_params(env)
       end
 
       @app.call(env).tap do |_status, headers, response|
@@ -29,6 +29,19 @@ module OliveBranch
             body.replace(new_response.to_json)
           end
         end
+      end
+    end
+
+    def underscore_params(env)
+      if Rails::VERSION::MAJOR < 5
+        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
+      else
+        request_body = JSON.parse(env['rack.input'].read)
+        request_body.deep_transform_keys!(&:underscore)
+        req = StringIO.new(request_body.to_json)
+
+        env['rack.input']     = req
+        env['CONTENT_LENGTH'] = req.length
       end
     end
   end
