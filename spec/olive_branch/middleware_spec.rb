@@ -81,6 +81,22 @@ RSpec.describe OliveBranch::Middleware do
       expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
     end
 
+    it 'camel-cases array response if JSON and inflection header present' do
+      app = lambda do |_env|
+        [
+          200,
+          { 'Content-Type' => 'application/json' },
+          ['[{"author_name":"Adam Smith"}]']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'camel')
+
+      expect(JSON.parse(response.body)[0]['authorName']).not_to be_nil
+    end
+
     it "dash-cases response if JSON and inflection header present" do
       app = -> (env) do
         [
@@ -95,6 +111,22 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get("/", "HTTP_X_KEY_INFLECTION" => "dash")
 
       expect(JSON.parse(response.body)["post"]["author-name"]).not_to be_nil
+    end
+
+    it 'dash-cases array response if JSON and inflection header present' do
+      app = lambda do |_env|
+        [
+          200,
+          { 'Content-Type' => 'application/json' },
+          ['[{"author_name":"Adam Smith"}]']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'dash')
+
+      expect(JSON.parse(response.body)[0]['author-name']).not_to be_nil
     end
 
     it "does not modify response if not JSON " do

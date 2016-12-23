@@ -21,9 +21,17 @@ module OliveBranch
             end
 
             if inflection == "camel"
-              new_response.deep_transform_keys! { |k| k.camelize(:lower) }
+              if new_response.is_a? Array
+                new_response.each { |o| o.deep_transform_keys! { |k| k.camelize(:lower)} }
+              else
+                new_response.deep_transform_keys! { |k| k.camelize(:lower) }
+              end
             elsif inflection == "dash"
-              new_response.deep_transform_keys!(&:dasherize)
+              if new_response.is_a? Array
+                new_response.each { |o| o.deep_transform_keys!(&:dasherize) }
+              else
+                new_response.deep_transform_keys!(&:dasherize)
+              end
             end
 
             body.replace(new_response.to_json)
