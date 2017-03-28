@@ -70,7 +70,7 @@ RSpec.describe OliveBranch::Middleware do
         [
           200,
           { "Content-Type" => "application/json" },
-          ['{"post":{"author_name":"Adam Smith"}}']
+          ['{"post":{"author_name":"Adam Smith","author-hobby":"Economics"}}']
         ]
       end
 
@@ -79,6 +79,7 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
 
       expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
+      expect(JSON.parse(response.body)["post"]["authorHobby"]).not_to be_nil
     end
 
     it 'camel-cases array response if JSON and inflection header present' do
@@ -86,7 +87,7 @@ RSpec.describe OliveBranch::Middleware do
         [
           200,
           { 'Content-Type' => 'application/json' },
-          ['[{"author_name":"Adam Smith"}]']
+          ['[{"author_name":"Adam Smith","author-hobby":"Economics"}]']
         ]
       end
 
@@ -95,6 +96,7 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'camel')
 
       expect(JSON.parse(response.body)[0]['authorName']).not_to be_nil
+      expect(JSON.parse(response.body)[0]['authorHobby']).not_to be_nil
     end
 
     it "dash-cases response if JSON and inflection header present" do
