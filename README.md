@@ -12,7 +12,7 @@ This gem lets your API users pass in and receive camelCased or dash-cased keys, 
 
 2. Add this to `config/applcation.rb`:
 
-        config.middleware.use "OliveBranch::Middleware"
+        config.middleware.use OliveBranch::Middleware
 
 ## Use
 
