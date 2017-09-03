@@ -5,3 +5,4 @@ gemspec
 
 gem "rspec-rails"
 gem "sqlite3"
+gem "appraisal"
