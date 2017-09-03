@@ -40,19 +40,10 @@ module OliveBranch
     end
 
     def underscore_params(env)
-      if defined?(Rails) && Rails::VERSION::MAJOR >= 5
-        begin
-          request_body = JSON.parse(env['rack.input'].read)
-          request_body.deep_transform_keys!(&:underscore)
-          req = StringIO.new(request_body.to_json)
+      req = ActionDispatch::Request.new(env)
+      req.request_parameters
 
-          env['rack.input']     = req
-          env['CONTENT_LENGTH'] = req.length
-        rescue JSON::ParserError
-        end
-      else
-        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
-      end
+      env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
     end
   end
 end
