@@ -1,4 +1,4 @@
-require "spec_helper"
+require "rails_helper"
 
 RSpec.describe OliveBranch::Middleware do
   describe "modifying request" do
@@ -28,6 +28,25 @@ RSpec.describe OliveBranch::Middleware do
       described_class.new(app).call(env)
 
       expect(incoming_params["post"]["author_name"]).not_to be_nil
+    end
+
+    it "snake cases incoming query params if content-type JSON and inflection header present" do
+      incoming_params = nil
+
+      app = -> (env) do
+        incoming_params = env["action_dispatch.request.query_parameters"]
+        [200, {}, ["{}"]]
+      end
+
+      env = params.merge(
+        "CONTENT_TYPE"        => "application/json",
+        "HTTP_X_KEY_INFLECTION" => "camel",
+        "QUERY_STRING" => "categoryFilter[categoryName]=economics",
+      )
+
+      described_class.new(app).call(env)
+
+      expect(incoming_params["category_filter"]["category_name"]).to eq "economics"
     end
 
     it "does not modify incoming params if content-type not JSON" do
