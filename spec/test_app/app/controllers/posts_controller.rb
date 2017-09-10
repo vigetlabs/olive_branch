@@ -1,4 +1,6 @@
 class PostsController < ApplicationController
+  COMPLEX_RESPONSE ||= JSON.parse(File.read(Rails.root.join("example_responses/complex.json")))
+
   def update
     request.env["params_spy"] = params
 
@@ -8,5 +10,9 @@ class PostsController < ApplicationController
     }
 
     render json: payload
+  end
+
+  def complex
+    render json: COMPLEX_RESPONSE
   end
 end
