@@ -83,7 +83,7 @@ RSpec.describe OliveBranch::Middleware do
     end
 
     context "with a custom content type check" do
-      let(:content_type_check_method) do
+      let(:content_type_check) do
         ->(content_type) { content_type == "foo/type" }
       end
 
@@ -100,7 +100,7 @@ RSpec.describe OliveBranch::Middleware do
           "HTTP_X_KEY_INFLECTION" => "camel"
         )
 
-        described_class.new(app, content_type_check_method: content_type_check_method).call(env)
+        described_class.new(app, content_type_check: content_type_check).call(env)
 
         expect(incoming_params["post"]["author_name"]).not_to be_nil
       end
@@ -118,7 +118,7 @@ RSpec.describe OliveBranch::Middleware do
           "HTTP_X_KEY_INFLECTION" => "camel"
         )
 
-        described_class.new(app, content_type_check_method: content_type_check_method).call(env)
+        described_class.new(app, content_type_check: content_type_check).call(env)
 
         expect(incoming_params["post"]["authorName"]).not_to be_nil
       end
@@ -241,7 +241,7 @@ RSpec.describe OliveBranch::Middleware do
     end
 
     context "with custom camelize method" do
-      let(:camelize_method) do
+      let(:camelize) do
         ->(string) { "camel#{string}" }
       end
 
@@ -254,7 +254,7 @@ RSpec.describe OliveBranch::Middleware do
           ]
         end
 
-        request = Rack::MockRequest.new(described_class.new(app, camelize_method: camelize_method))
+        request = Rack::MockRequest.new(described_class.new(app, camelize: camelize))
 
         response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
 
@@ -264,7 +264,7 @@ RSpec.describe OliveBranch::Middleware do
     end
 
     context "with custom dasherize method" do
-      let(:dasherize_method) do
+      let(:dasherize) do
         ->(string) { "dash#{string}" }
       end
 
@@ -277,7 +277,7 @@ RSpec.describe OliveBranch::Middleware do
           ]
         end
 
-        request = Rack::MockRequest.new(described_class.new(app, dasherize_method: dasherize_method))
+        request = Rack::MockRequest.new(described_class.new(app, dasherize: dasherize))
 
         response = request.get("/", "HTTP_X_KEY_INFLECTION" => "dash")
 

@@ -40,20 +40,20 @@ module OliveBranch
   class Middleware
     def initialize(app, args = {})
       @app = app
-      @camelize_method = args[:camelize_method] || Transformations.method(:camelize)
-      @dasherize_method = args[:dasherize_method] || Transformations.method(:dasherize)
-      @content_type_check_method = args[:content_type_check_method] || Checks.method(:content_type_check)
+      @camelize = args[:camelize] || Transformations.method(:camelize)
+      @dasherize = args[:dasherize] || Transformations.method(:dasherize)
+      @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
     end
 
     def call(env)
       inflection = env["HTTP_X_KEY_INFLECTION"]
 
-      if inflection && @content_type_check_method.call(env["CONTENT_TYPE"])
+      if inflection && @content_type_check.call(env["CONTENT_TYPE"])
         Transformations.underscore_params(env)
       end
 
       @app.call(env).tap do |_status, headers, response|
-        next unless inflection && @content_type_check_method.call(headers["Content-Type"])
+        next unless inflection && @content_type_check.call(headers["Content-Type"])
         response.each do |body|
           begin
             new_response = MultiJson.load(body)
@@ -72,9 +72,9 @@ module OliveBranch
 
     def inflection_method(inflection)
       if inflection == "camel"
-        @camelize_method
+        @camelize
       elsif inflection == "dash"
-        @dasherize_method
+        @dasherize
       else
         key
       end
