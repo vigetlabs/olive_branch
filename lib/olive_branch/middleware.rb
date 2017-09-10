@@ -6,17 +6,18 @@ module OliveBranch
       @app = app
       @camelize_method = args[:camelize_method] || method(:camelize)
       @dasherize_method = args[:dasherize_method] || method(:dasherize)
+      @content_type_check_method = args[:content_type_check_method] || method(:content_type_check)
     end
 
     def call(env)
       inflection = env["HTTP_X_KEY_INFLECTION"]
 
-      if inflection && env["CONTENT_TYPE"] =~ /application\/json/
+      if inflection && @content_type_check_method.call(env["CONTENT_TYPE"])
         underscore_params(env)
       end
 
       @app.call(env).tap do |_status, headers, response|
-        next unless inflection && headers["Content-Type"] =~ /application\/json/
+        next unless inflection && @content_type_check_method.call(headers["Content-Type"])
         response.each do |body|
           begin
             new_response = MultiJson.load(body)
@@ -43,6 +44,10 @@ module OliveBranch
       else
         key
       end
+    end
+
+    def content_type_check(content_type)
+      content_type =~ /application\/json/
     end
 
     def camelize(string)
