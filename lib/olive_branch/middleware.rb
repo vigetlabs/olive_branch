@@ -1,3 +1,5 @@
+require "multi_json"
+
 module OliveBranch
   class Middleware
     def initialize(app)
@@ -15,8 +17,8 @@ module OliveBranch
         next unless inflection && headers["Content-Type"] =~ /application\/json/
         response.each do |body|
           begin
-            new_response = JSON.parse(body)
-          rescue JSON::ParserError
+            new_response = MultiJson.load(body)
+          rescue MultiJson::ParseError
             next
           end
 
@@ -34,7 +36,7 @@ module OliveBranch
             end
           end
 
-          body.replace(new_response.to_json)
+          body.replace(MultiJson.dump(new_response))
         end
       end
     end
