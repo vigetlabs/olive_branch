@@ -2,8 +2,10 @@ require "multi_json"
 
 module OliveBranch
   class Middleware
-    def initialize(app)
+    def initialize(app, args = {})
       @app = app
+      @camelize_method = args[:camelize_method] || method(:camelize)
+      @dasherize_method = args[:dasherize_method] || method(:dasherize)
     end
 
     def call(env)
@@ -22,23 +24,33 @@ module OliveBranch
             next
           end
 
-          if inflection == "camel"
-            if new_response.is_a? Array
-              new_response.each { |o| o.deep_transform_keys! { |k| k.underscore.camelize(:lower)} }
-            else
-              new_response.deep_transform_keys! { |k| k.underscore.camelize(:lower) }
-            end
-          elsif inflection == "dash"
-            if new_response.is_a? Array
-              new_response.each { |o| o.deep_transform_keys!(&:dasherize) }
-            else
-              new_response.deep_transform_keys!(&:dasherize)
-            end
+          if new_response.is_a? Array
+            new_response.each { |o| o.deep_transform_keys! { |k| transform(k, inflection) } }
+          else
+            new_response.deep_transform_keys! { |k| transform(k, inflection) }
           end
 
           body.replace(MultiJson.dump(new_response))
         end
       end
+    end
+
+    def transform(key, inflection)
+      if inflection == "camel"
+        @camelize_method.call(key)
+      elsif inflection == "dash"
+        @dasherize_method.call(key)
+      else
+        key
+      end
+    end
+
+    def camelize(string)
+      string.underscore.camelize(:lower)
+    end
+
+    def dasherize(string)
+      string.dasherize
     end
 
     def underscore_params(env)
