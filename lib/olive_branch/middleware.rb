@@ -76,7 +76,8 @@ module OliveBranch
       elsif inflection == "dash"
         @dasherize
       else
-        key
+        # probably misconfigured, do nothing
+        -> (string) { string }
       end
     end
   end
