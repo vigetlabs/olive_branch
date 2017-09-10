@@ -81,6 +81,48 @@ RSpec.describe OliveBranch::Middleware do
 
       expect(incoming_params["post"]["authorName"]).not_to be_nil
     end
+
+    context "with a custom content type check" do
+      let(:content_type_check_method) do
+        ->(content_type) { content_type == "foo/type" }
+      end
+
+      it "snake cases incoming params if content-type matches the custom check" do
+        incoming_params = nil
+
+        app = -> (env) do
+          incoming_params = env["action_dispatch.request.request_parameters"]
+          [200, {}, ["{}"]]
+        end
+
+        env = params.merge(
+          "CONTENT_TYPE"        => "foo/type",
+          "HTTP_X_KEY_INFLECTION" => "camel"
+        )
+
+        described_class.new(app, content_type_check_method: content_type_check_method).call(env)
+
+        expect(incoming_params["post"]["author_name"]).not_to be_nil
+      end
+
+      it "does not modify incoming params if content-type not matching custom check" do
+        incoming_params = nil
+
+        app = -> (env) do
+          incoming_params = env["action_dispatch.request.request_parameters"]
+          [200, {}, ["{}"]]
+        end
+
+        env = params.merge(
+          "CONTENT_TYPE"        => "application/json",
+          "HTTP_X_KEY_INFLECTION" => "camel"
+        )
+
+        described_class.new(app, content_type_check_method: content_type_check_method).call(env)
+
+        expect(incoming_params["post"]["authorName"]).not_to be_nil
+      end
+    end
   end
 
   describe "modifying response" do
@@ -196,6 +238,52 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
 
       expect(response.body =~ /author_name/).not_to be_nil
+    end
+
+    context "with custom camelize method" do
+      let(:camelize_method) do
+        ->(string) { "camel#{string}" }
+      end
+
+      it "uses the custom camelize method" do
+        app = -> (env) do
+          [
+            200,
+            { "Content-Type" => "application/json" },
+            ['{"post":{"author_name":"Adam Smith","author-hobby":"Economics"}}']
+          ]
+        end
+
+        request = Rack::MockRequest.new(described_class.new(app, camelize_method: camelize_method))
+
+        response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
+
+        expect(JSON.parse(response.body)["camelpost"]["camelauthor_name"]).not_to be_nil
+        expect(JSON.parse(response.body)["camelpost"]["camelauthor-hobby"]).not_to be_nil
+      end
+    end
+
+    context "with custom dasherize method" do
+      let(:dasherize_method) do
+        ->(string) { "dash#{string}" }
+      end
+
+      it "uses the custom dasherize method" do
+        app = -> (env) do
+          [
+            200,
+            { "Content-Type" => "application/json" },
+            ['{"post":{"author_name":"Adam Smith","author-hobby":"Economics"}}']
+          ]
+        end
+
+        request = Rack::MockRequest.new(described_class.new(app, dasherize_method: dasherize_method))
+
+        response = request.get("/", "HTTP_X_KEY_INFLECTION" => "dash")
+
+        expect(JSON.parse(response.body)["dashpost"]["dashauthor_name"]).not_to be_nil
+        expect(JSON.parse(response.body)["dashpost"]["dashauthor-hobby"]).not_to be_nil
+      end
     end
   end
 end
