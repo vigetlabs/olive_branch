@@ -1,51 +1,84 @@
+require "multi_json"
+
 module OliveBranch
+  class Checks
+    def self.content_type_check(content_type)
+      content_type =~ /application\/json/
+    end
+  end
+
+  class Transformations
+    class << self
+      def transform(value, transform_method)
+        case value
+        when Array then value.map { |item| transform(item, transform_method) }
+        when Hash then value.deep_transform_keys! { |key| transform(key, transform_method) }
+        when String then transform_method.call(value)
+        else value
+        end
+      end
+
+      def camelize(string)
+        string.underscore.camelize(:lower)
+      end
+
+      def dasherize(string)
+        string.dasherize
+      end
+
+      def underscore_params(env)
+        req = ActionDispatch::Request.new(env)
+        req.request_parameters
+        req.query_parameters
+
+        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
+        env["action_dispatch.request.query_parameters"].deep_transform_keys!(&:underscore)
+      end
+    end
+  end
+
   class Middleware
-    def initialize(app)
+    def initialize(app, args = {})
       @app = app
+      @camelize = args[:camelize] || Transformations.method(:camelize)
+      @dasherize = args[:dasherize] || Transformations.method(:dasherize)
+      @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
     end
 
     def call(env)
       inflection = env["HTTP_X_KEY_INFLECTION"]
 
-      if inflection && env["CONTENT_TYPE"] =~ /application\/json/
-        underscore_params(env)
+      if inflection && @content_type_check.call(env["CONTENT_TYPE"])
+        Transformations.underscore_params(env)
       end
 
       @app.call(env).tap do |_status, headers, response|
-        next unless inflection && headers["Content-Type"] =~ /application\/json/
+        next unless inflection && @content_type_check.call(headers["Content-Type"])
         response.each do |body|
           begin
-            new_response = JSON.parse(body)
-          rescue JSON::ParserError
+            new_response = MultiJson.load(body)
+          rescue MultiJson::ParseError
             next
           end
 
-          if inflection == "camel"
-            if new_response.is_a? Array
-              new_response.each { |o| o.deep_transform_keys! { |k| k.underscore.camelize(:lower)} }
-            else
-              new_response.deep_transform_keys! { |k| k.underscore.camelize(:lower) }
-            end
-          elsif inflection == "dash"
-            if new_response.is_a? Array
-              new_response.each { |o| o.deep_transform_keys!(&:dasherize) }
-            else
-              new_response.deep_transform_keys!(&:dasherize)
-            end
-          end
+          Transformations.transform(new_response, inflection_method(inflection))
 
-          body.replace(new_response.to_json)
+          body.replace(MultiJson.dump(new_response))
         end
       end
     end
 
-    def underscore_params(env)
-      req = ActionDispatch::Request.new(env)
-      req.request_parameters
-      req.query_parameters
+    private
 
-      env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
-      env["action_dispatch.request.query_parameters"].deep_transform_keys!(&:underscore)
+    def inflection_method(inflection)
+      if inflection == "camel"
+        @camelize
+      elsif inflection == "dash"
+        @dasherize
+      else
+        # probably misconfigured, do nothing
+        -> (string) { string }
+      end
     end
   end
 end
