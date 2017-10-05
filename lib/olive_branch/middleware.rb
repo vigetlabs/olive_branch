@@ -43,10 +43,11 @@ module OliveBranch
       @camelize = args[:camelize] || Transformations.method(:camelize)
       @dasherize = args[:dasherize] || Transformations.method(:dasherize)
       @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
+      @default_inflection = args[:inflection]
     end
 
     def call(env)
-      inflection = env["HTTP_X_KEY_INFLECTION"]
+      inflection = env["HTTP_X_KEY_INFLECTION"] || @default_inflection
 
       if inflection && @content_type_check.call(env["CONTENT_TYPE"])
         Transformations.underscore_params(env)

@@ -285,5 +285,23 @@ RSpec.describe OliveBranch::Middleware do
         expect(JSON.parse(response.body)["dashpost"]["dashauthor-hobby"]).not_to be_nil
       end
     end
+
+    context "with a default inflection" do
+      it "uses the default inflection" do
+        app = -> (env) do
+          [
+            200,
+            { "Content-Type" => "application/json" },
+            ['{"post":{"author_name":"Adam Smith"}}']
+          ]
+        end
+
+        request = Rack::MockRequest.new(described_class.new(app, inflection: 'camel'))
+
+        response = request.get("/")
+
+        expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
+      end
+    end
   end
 end
