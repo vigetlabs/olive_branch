@@ -54,6 +54,12 @@ It is also possible to include a custom content type check in the same manner
     config.middleware.use OliveBranch::Middleware, content_type_check: -> (content_type) { content_type == "my/content-type" }
 ```
 
+Finally, a default inflection can be specified so you don't have to include the `X-Key-Inflection` header on every request.
+
+```ruby
+    config.middleware.use OliveBranch::Middleware, inflection: 'camel'
+```
+
 * * *
 
 OliveBranch is released under the [MIT License](http://www.opensource.org/licenses/MIT). See MIT-LICENSE for further details.
