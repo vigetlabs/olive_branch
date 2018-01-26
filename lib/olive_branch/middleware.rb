@@ -5,6 +5,10 @@ module OliveBranch
     def self.content_type_check(content_type)
       content_type =~ /application\/json/
     end
+
+    def self.default_exclude(env)
+      false
+    end
   end
 
   class Transformations
@@ -43,18 +47,21 @@ module OliveBranch
       @camelize = args[:camelize] || Transformations.method(:camelize)
       @dasherize = args[:dasherize] || Transformations.method(:dasherize)
       @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
+      @exclude_response = args[:exclude_response] || Checks.method(:default_exclude)
+      @exclude_params = args[:exclude_params] || Checks.method(:default_exclude)
       @default_inflection = args[:inflection]
     end
 
     def call(env)
       inflection = env["HTTP_X_KEY_INFLECTION"] || @default_inflection
 
-      if inflection && @content_type_check.call(env["CONTENT_TYPE"])
+      if inflection && !exclude_params?(env)
         Transformations.underscore_params(env)
       end
 
       @app.call(env).tap do |_status, headers, response|
-        next unless inflection && @content_type_check.call(headers["Content-Type"])
+        next if !inflection || exclude_response?(env, headers)
+
         response.each do |body|
           begin
             new_response = MultiJson.load(body)
@@ -70,6 +77,14 @@ module OliveBranch
     end
 
     private
+
+    def exclude_params?(env)
+      !@content_type_check.call(env["CONTENT_TYPE"]) || @exclude_params.call(env)
+    end
+
+    def exclude_response?(env, headers)
+      !@content_type_check.call(headers["Content-Type"]) || @exclude_response.call(env)
+    end
 
     def inflection_method(inflection)
       if inflection == "camel"

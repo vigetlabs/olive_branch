@@ -46,7 +46,17 @@ end
 
 ```
 
+A default inflection can be specified so you don't have to include the `X-Key-Inflection` header on every request.
+
+```ruby
+    config.middleware.use OliveBranch::Middleware, inflection: 'camel'
+```
+
 A benchmark of this compared to the standard implementation shows a saving of ~75% rails response times for a complex response payload, or a ~400% improvement, but there is a risk of memory usage ballooning if you have dynamic keys. You can make this method as complex as required, but keep in mind that it will end up being called a _lot_ in a busy app, so it's worth thinking about how to do what you need in the fastest manner possible.
+
+### Filtering
+
+#### Content type
 
 It is also possible to include a custom content type check in the same manner
 
@@ -54,10 +64,20 @@ It is also possible to include a custom content type check in the same manner
     config.middleware.use OliveBranch::Middleware, content_type_check: -> (content_type) { content_type == "my/content-type" }
 ```
 
-Finally, a default inflection can be specified so you don't have to include the `X-Key-Inflection` header on every request.
+#### Excluding URLs
+
+Additionally you can define a custom check by passing a proc
+
+For params transforming
 
 ```ruby
-    config.middleware.use OliveBranch::Middleware, inflection: 'camel'
+    config.middleware.use OliveBranch::Middleware, exclude_params: -> (env) { ENV['PATH_INFO'].match(/^\/do_not_transform/) }
+```
+
+Or response transforming
+
+```ruby
+    config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) { ENV['PATH_INFO'].match(/^\/do_not_transform/) }
 ```
 
 * * *

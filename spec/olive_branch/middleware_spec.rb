@@ -67,6 +67,30 @@ RSpec.describe OliveBranch::Middleware do
       expect(incoming_params["post"]["authorName"]).not_to be_nil
     end
 
+    it "does not modify incoming params if exclude returns true" do
+      incoming_params = nil
+
+      app = -> (env) do
+        incoming_params = env["action_dispatch.request.request_parameters"]
+        [200, {}, ["{}"]]
+      end
+
+      env = params.merge(
+        "CONTENT_TYPE"        => "application/json",
+        "HTTP_X_KEY_INFLECTION" => "camel",
+        "PATH_INFO"             => "/do_not_transform"
+      )
+
+      exclude_params = proc do |env|
+        path = env["PATH_INFO"]
+        !!path.match(/^\/do_not_transform/)
+      end
+
+      described_class.new(app, exclude_params: exclude_params).call(env)
+
+      expect(incoming_params["post"]["authorName"]).not_to be_nil
+    end
+
     it "does not modify incoming params if inflection header missing" do
       incoming_params = nil
 
@@ -190,6 +214,27 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'dash')
 
       expect(JSON.parse(response.body)[0]['author-name']).not_to be_nil
+    end
+
+    it "does not modify response if exclude returns true" do
+      app = -> (env) do
+        [
+          200,
+          { "Content-Type" => "application/json" },
+          ['{"post":{"author_name":"Adam Smith"}}']
+        ]
+      end
+
+      exclude_response = proc do |env|
+        path = env["PATH_INFO"]
+        !!path.match(/^\/do_not_transform/)
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app, exclude_response: exclude_response))
+
+      response = request.get("/do_not_transform", "HTTP_X_KEY_INFLECTION" => "camel")
+
+      expect(JSON.parse(response.body)["post"]["author_name"]).not_to be_nil
     end
 
     it "does not modify response if not JSON " do
