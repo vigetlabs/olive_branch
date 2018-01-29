@@ -5,6 +5,10 @@ module OliveBranch
     def self.content_type_check(content_type)
       content_type =~ /application\/json/
     end
+
+    def self.default_exclude(env)
+      false
+    end
   end
 
   class Transformations
@@ -43,18 +47,17 @@ module OliveBranch
       @camelize = args[:camelize] || Transformations.method(:camelize)
       @dasherize = args[:dasherize] || Transformations.method(:dasherize)
       @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
+      @exclude_response = args[:exclude_response] || Checks.method(:default_exclude)
+      @exclude_params = args[:exclude_params] || Checks.method(:default_exclude)
       @default_inflection = args[:inflection]
     end
 
     def call(env)
-      inflection = env["HTTP_X_KEY_INFLECTION"] || @default_inflection
-
-      if inflection && @content_type_check.call(env["CONTENT_TYPE"])
-        Transformations.underscore_params(env)
-      end
+      Transformations.underscore_params(env) unless exclude_params?(env)
 
       @app.call(env).tap do |_status, headers, response|
-        next unless inflection && @content_type_check.call(headers["Content-Type"])
+        next if exclude_response?(env, headers)
+
         response.each do |body|
           begin
             new_response = MultiJson.load(body)
@@ -62,7 +65,7 @@ module OliveBranch
             next
           end
 
-          Transformations.transform(new_response, inflection_method(inflection))
+          Transformations.transform(new_response, inflection_method(env))
 
           body.replace(MultiJson.dump(new_response))
         end
@@ -71,7 +74,29 @@ module OliveBranch
 
     private
 
-    def inflection_method(inflection)
+    def exclude_params?(env)
+      exclude?(env, env["CONTENT_TYPE"], @exclude_params)
+    end
+
+    def exclude_response?(env, headers)
+      exclude?(env, headers["Content-Type"], @exclude_response)
+    end
+
+    def exclude?(env, content_type, block)
+      !inflection_type(env) || !valid_content_type?(content_type) || block.call(env)
+    end
+
+    def valid_content_type?(content_type)
+      @content_type_check.call(content_type)
+    end
+
+    def inflection_type(env)
+      env["HTTP_X_KEY_INFLECTION"] || @default_inflection
+    end
+
+    def inflection_method(env)
+      inflection = inflection_type(env)
+
       if inflection == "camel"
         @camelize
       elsif inflection == "dash"
