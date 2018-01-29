@@ -71,13 +71,13 @@ Additionally you can define a custom check by passing a proc
 For params transforming
 
 ```ruby
-    config.middleware.use OliveBranch::Middleware, exclude_params: -> (env) { ENV['PATH_INFO'].match(/^\/do_not_transform/) }
+    config.middleware.use OliveBranch::Middleware, exclude_params: -> (env) { env['PATH_INFO'].match(/^\/do_not_transform/) }
 ```
 
 Or response transforming
 
 ```ruby
-    config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) { ENV['PATH_INFO'].match(/^\/do_not_transform/) }
+    config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) { env['PATH_INFO'].match(/^\/do_not_transform/) }
 ```
 
 * * *
