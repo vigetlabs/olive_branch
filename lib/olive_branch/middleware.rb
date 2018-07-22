@@ -54,22 +54,26 @@ module OliveBranch
 
     def call(env)
       Transformations.underscore_params(env) unless exclude_params?(env)
+      status, headers, response = @app.call(env)
 
-      @app.call(env).tap do |_status, headers, response|
-        next if exclude_response?(env, headers)
+      return [status, headers, response] if exclude_response?(env, headers)
 
-        response.each do |body|
-          begin
-            new_response = MultiJson.load(body)
-          rescue MultiJson::ParseError
-            next
-          end
+      new_responses = []
 
-          Transformations.transform(new_response, inflection_method(env))
-
-          body.replace(MultiJson.dump(new_response))
+      response.each do |body|
+        begin
+          new_response = MultiJson.load(body)
+        rescue MultiJson::ParseError
+          new_responses << body
+          next
         end
+
+        Transformations.transform(new_response, inflection_method(env))
+
+        new_responses << MultiJson.dump(new_response)
       end
+
+      [status, headers, new_responses]
     end
 
     private

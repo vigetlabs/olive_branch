@@ -348,5 +348,23 @@ RSpec.describe OliveBranch::Middleware do
         expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
       end
     end
+
+    context "with frozen strings" do
+      it "dups the string before replacing" do
+        app = -> (env) do
+          [
+            200,
+            { "Content-Type" => "application/json" },
+            ['{"post":{"author_name":"Adam Smith"}}'.freeze]
+          ]
+        end
+
+        request = Rack::MockRequest.new(described_class.new(app, inflection: 'camel'))
+
+        response = request.get("/")
+
+        expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
+      end
+    end
   end
 end
