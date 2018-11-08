@@ -3,7 +3,7 @@ require "multi_json"
 module OliveBranch
   class Checks
     def self.content_type_check(content_type)
-      content_type =~ /application\/json/
+      content_type =~ /application\/json/ || content_type =~ /application\/vnd\.api\+json/
     end
 
     def self.default_exclude(env)
