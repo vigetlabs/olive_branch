@@ -90,7 +90,11 @@ config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) {
 
 ## Troubleshooting
 
-We've seen a few folks raise issues that inbound transformations are not taking place. This is often due to the fact that OliveBranch, by default, is only transforming keys when a request's Content-Type is `application/json`. If you would like to force inbound transformation on every request, you must define an override for the `content_type_check` functionality:
+We've seen folks raise issues that inbound transformations are not taking place. This is often due to the fact that OliveBranch, by default, is only transforming keys when a request's Content-Type is `application/json`.
+
+Note that your HTTP client library may suppress even a manually specified `Content-Type` header if the request body is empty (e.g. [Axios does this](https://github.com/axios/axios/issues/86)). This is a common gotcha for GET requests, the body of which are [often expected to be empty](https://stackoverflow.com/questions/978061/http-get-with-request-body) for reasons of caching. If you're seeing the middleware perform on POST or PATCH requests, but not GET requests, this may be your issue.
+
+You may choose to force inbound transformation on every request by overriding the `content_type_check` functionality:
 
 ```ruby
 config.middleware.use OliveBranch::Middleware, content_type_check: -> (content_type) { true }
