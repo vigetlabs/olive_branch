@@ -49,6 +49,27 @@ RSpec.describe OliveBranch::Middleware do
       expect(incoming_params["category_filter"]["category_name"]).to eq "economics"
     end
 
+    it 'snake cases incoming query with JSON and pascal inflection' do
+      incoming_params = nil
+
+      app = lambda do |env|
+        incoming_params = env['action_dispatch.request.query_parameters']
+        [200, {}, ['{}']]
+      end
+
+      env = params.merge(
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_X_KEY_INFLECTION' => 'pascal',
+        'QUERY_STRING' => 'CategoryFilter[CategoryName]=economics'
+      )
+
+      described_class.new(app).call(env)
+
+      expect(
+        incoming_params['category_filter']['category_name']
+      ).to eq 'economics'
+    end
+
     it "does not modify incoming params if content-type not JSON" do
       incoming_params = nil
 
@@ -214,6 +235,38 @@ RSpec.describe OliveBranch::Middleware do
       response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'dash')
 
       expect(JSON.parse(response.body)[0]['author-name']).not_to be_nil
+    end
+
+    it 'pascal-cases response if JSON and inflection header are present' do
+      app = lambda do |_env|
+        [
+          200,
+          { 'Content-Type' => 'application/json' },
+          ['{"post":{"author_name":"Adam Smith"}}']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'pascal')
+      expect(JSON.parse(response.body)['Post']['AuthorName']).not_to be_nil
+    end
+
+    it 'pascal-cases array response if JSON and inflection header present' do
+      app = lambda do |_env|
+        [
+          200,
+          { 'Content-Type' => 'application/json' },
+          ['[{"author_name":"Adam Smith","author-hobby":"Economics"}]']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'pascal')
+
+      expect(JSON.parse(response.body)[0]['AuthorName']).not_to be_nil
+      expect(JSON.parse(response.body)[0]['AuthorHobby']).not_to be_nil
     end
 
     it "does not modify response if exclude returns true" do
