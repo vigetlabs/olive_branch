@@ -22,6 +22,10 @@ module OliveBranch
         end
       end
 
+      def pascalize(string)
+        string.underscore.camelize(:upper)
+      end
+
       def camelize(string)
         string.underscore.camelize(:lower)
       end
@@ -46,6 +50,7 @@ module OliveBranch
       @app = app
       @camelize = args[:camelize] || Transformations.method(:camelize)
       @dasherize = args[:dasherize] || Transformations.method(:dasherize)
+      @pascalize = args[:pascalize] || Transformations.method(:pascalize)
       @content_type_check = args[:content_type_check] || Checks.method(:content_type_check)
       @exclude_response = args[:exclude_response] || Checks.method(:default_exclude)
       @exclude_params = args[:exclude_params] || Checks.method(:default_exclude)
@@ -105,6 +110,8 @@ module OliveBranch
         @camelize
       elsif inflection == "dash"
         @dasherize
+      elsif inflection == 'pascal'
+        @pascalize
       else
         # probably misconfigured, do nothing
         -> (string) { string }
