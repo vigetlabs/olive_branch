@@ -21,7 +21,7 @@ config.middleware.use OliveBranch::Middleware
 
 ## Use
 
-Include a `X-Key-Inflection` header with values of `camel`, `dash`, or `snake` in your JSON API requests.
+Include a `X-Key-Inflection` header with values of `camel`, `dash`, `snake` or `pascal` in your JSON API requests.
 
 For more examples, see [our blog post](https://www.viget.com/articles/introducing-olivebranch).
 
