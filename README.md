@@ -21,7 +21,7 @@ config.middleware.use OliveBranch::Middleware
 
 ## Use
 
-Include a `X-Key-Inflection` header with values of `camel`, `dash`, `snake` or `pascal` in your JSON API requests.
+Include a `Key-Inflection` header with values of `camel`, `dash`, `snake` or `pascal` in your JSON API requests.
 
 For more examples, see [our blog post](https://www.viget.com/articles/introducing-olivebranch).
 
@@ -48,7 +48,13 @@ end
 config.middleware.use OliveBranch::Middleware, camelize: FastCamel.method(:camelize)
 ```
 
-A default inflection can be specified so you don't have to include the `X-Key-Inflection` header on every request.
+Default inflection header key can be changed like
+
+```ruby
+config.middleware.use OliveBranch::Middleware, inflection_header: 'Inflect-With'
+```
+
+A default inflection can be specified so you don't have to include the `Key-Inflection` header on every request.
 
 ```ruby
 config.middleware.use OliveBranch::Middleware, inflection: 'camel'

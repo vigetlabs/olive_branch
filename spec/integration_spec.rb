@@ -3,13 +3,13 @@ require 'rails_helper'
 RSpec.describe 'Integration Test', :type => :request do
   let(:url) { '/posts/1234?categoryFilter[categoryName][]=food' }
   let(:headers) do
-    { "CONTENT_TYPE" => "application/json", 'X-Key-Inflection' => 'camel' }
+    { "CONTENT_TYPE" => "application/json", 'Key-Inflection' => 'camel' }
   end
   let(:params) do
     { 'post' => { 'authorName' => 'John Smith' } }
   end
 
-  context "when the X-Key-Inflection HTTP header is set to 'camel'" do
+  context "when the Key-Inflection HTTP header is set to 'camel'" do
     it "should transform response keys to camel case" do
       put_request
 
@@ -36,7 +36,7 @@ RSpec.describe 'Integration Test', :type => :request do
     end
   end
 
-  context "when the X-Key-Inflection HTTP header is not set" do
+  context "when the Key-Inflection HTTP header is not set" do
     let(:headers) { { "CONTENT_TYPE" => "application/json" } }
 
     it "should NOT transform response keys" do
