@@ -55,6 +55,8 @@ module OliveBranch
       @exclude_response = args[:exclude_response] || Checks.method(:default_exclude)
       @exclude_params = args[:exclude_params] || Checks.method(:default_exclude)
       @default_inflection = args[:inflection]
+      @inflection_header = args.fetch(:inflection_header, 'Key-Inflection').gsub(/[^a-z0-9]/i, '_').upcase
+      @inflection_header = "HTTP_#{@inflection_header}" unless @inflection_header.start_with?('HTTP_')
     end
 
     def call(env)
@@ -100,7 +102,7 @@ module OliveBranch
     end
 
     def inflection_type(env)
-      env["HTTP_X_KEY_INFLECTION"] || @default_inflection
+      env[@inflection_header] || @default_inflection
     end
 
     def inflection_method(env)

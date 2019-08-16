@@ -22,7 +22,7 @@ RSpec.describe OliveBranch::Middleware do
 
       env = params.merge(
         "CONTENT_TYPE"        => "application/json",
-        "HTTP_X_KEY_INFLECTION" => "camel"
+        "HTTP_KEY_INFLECTION" => "camel"
       )
 
       described_class.new(app).call(env)
@@ -40,7 +40,7 @@ RSpec.describe OliveBranch::Middleware do
 
       env = params.merge(
         "CONTENT_TYPE"        => "application/json",
-        "HTTP_X_KEY_INFLECTION" => "camel",
+        "HTTP_KEY_INFLECTION" => "camel",
         "QUERY_STRING" => "categoryFilter[categoryName]=economics",
       )
 
@@ -59,7 +59,7 @@ RSpec.describe OliveBranch::Middleware do
 
       env = params.merge(
         'CONTENT_TYPE' => 'application/json',
-        'HTTP_X_KEY_INFLECTION' => 'pascal',
+        'HTTP_KEY_INFLECTION' => 'pascal',
         'QUERY_STRING' => 'CategoryFilter[CategoryName]=economics'
       )
 
@@ -80,7 +80,7 @@ RSpec.describe OliveBranch::Middleware do
 
       env = params.merge(
         "CONTENT_TYPE"        => "text/html",
-        "HTTP_X_KEY_INFLECTION" => "camel"
+        "HTTP_KEY_INFLECTION" => "camel"
       )
 
       described_class.new(app).call(env)
@@ -98,7 +98,7 @@ RSpec.describe OliveBranch::Middleware do
 
       env = params.merge(
         "CONTENT_TYPE"        => "application/json",
-        "HTTP_X_KEY_INFLECTION" => "camel",
+        "HTTP_KEY_INFLECTION" => "camel",
         "PATH_INFO"             => "/do_not_transform"
       )
 
@@ -142,7 +142,7 @@ RSpec.describe OliveBranch::Middleware do
 
         env = params.merge(
           "CONTENT_TYPE"        => "foo/type",
-          "HTTP_X_KEY_INFLECTION" => "camel"
+          "HTTP_KEY_INFLECTION" => "camel"
         )
 
         described_class.new(app, content_type_check: content_type_check).call(env)
@@ -160,7 +160,7 @@ RSpec.describe OliveBranch::Middleware do
 
         env = params.merge(
           "CONTENT_TYPE"        => "application/json",
-          "HTTP_X_KEY_INFLECTION" => "camel"
+          "HTTP_KEY_INFLECTION" => "camel"
         )
 
         described_class.new(app, content_type_check: content_type_check).call(env)
@@ -182,7 +182,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
+      response = request.get("/", "HTTP_KEY_INFLECTION" => "camel")
 
       expect(JSON.parse(response.body)["post"]["authorName"]).not_to be_nil
       expect(JSON.parse(response.body)["post"]["authorHobby"]).not_to be_nil
@@ -199,7 +199,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'camel')
+      response = request.get('/', 'HTTP_KEY_INFLECTION' => 'camel')
 
       expect(JSON.parse(response.body)[0]['authorName']).not_to be_nil
       expect(JSON.parse(response.body)[0]['authorHobby']).not_to be_nil
@@ -216,7 +216,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get("/", "HTTP_X_KEY_INFLECTION" => "dash")
+      response = request.get("/", "HTTP_KEY_INFLECTION" => "dash")
 
       expect(JSON.parse(response.body)["post"]["author-name"]).not_to be_nil
     end
@@ -232,7 +232,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'dash')
+      response = request.get('/', 'HTTP_KEY_INFLECTION' => 'dash')
 
       expect(JSON.parse(response.body)[0]['author-name']).not_to be_nil
     end
@@ -248,7 +248,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'pascal')
+      response = request.get('/', 'HTTP_KEY_INFLECTION' => 'pascal')
       expect(JSON.parse(response.body)['Post']['AuthorName']).not_to be_nil
     end
 
@@ -263,7 +263,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get('/', 'HTTP_X_KEY_INFLECTION' => 'pascal')
+      response = request.get('/', 'HTTP_KEY_INFLECTION' => 'pascal')
 
       expect(JSON.parse(response.body)[0]['AuthorName']).not_to be_nil
       expect(JSON.parse(response.body)[0]['AuthorHobby']).not_to be_nil
@@ -285,7 +285,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app, exclude_response: exclude_response))
 
-      response = request.get("/do_not_transform", "HTTP_X_KEY_INFLECTION" => "camel")
+      response = request.get("/do_not_transform", "HTTP_KEY_INFLECTION" => "camel")
 
       expect(JSON.parse(response.body)["post"]["author_name"]).not_to be_nil
     end
@@ -301,7 +301,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
+      response = request.get("/", "HTTP_KEY_INFLECTION" => "camel")
 
       expect(JSON.parse(response.body)["post"]["author_name"]).not_to be_nil
     end
@@ -333,7 +333,7 @@ RSpec.describe OliveBranch::Middleware do
 
       request = Rack::MockRequest.new(described_class.new(app))
 
-      response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
+      response = request.get("/", "HTTP_KEY_INFLECTION" => "camel")
 
       expect(response.body =~ /author_name/).not_to be_nil
     end
@@ -354,7 +354,7 @@ RSpec.describe OliveBranch::Middleware do
 
         request = Rack::MockRequest.new(described_class.new(app, camelize: camelize))
 
-        response = request.get("/", "HTTP_X_KEY_INFLECTION" => "camel")
+        response = request.get("/", "HTTP_KEY_INFLECTION" => "camel")
 
         expect(JSON.parse(response.body)["camelpost"]["camelauthor_name"]).not_to be_nil
         expect(JSON.parse(response.body)["camelpost"]["camelauthor-hobby"]).not_to be_nil
@@ -377,7 +377,7 @@ RSpec.describe OliveBranch::Middleware do
 
         request = Rack::MockRequest.new(described_class.new(app, dasherize: dasherize))
 
-        response = request.get("/", "HTTP_X_KEY_INFLECTION" => "dash")
+        response = request.get("/", "HTTP_KEY_INFLECTION" => "dash")
 
         expect(JSON.parse(response.body)["dashpost"]["dashauthor_name"]).not_to be_nil
         expect(JSON.parse(response.body)["dashpost"]["dashauthor-hobby"]).not_to be_nil
