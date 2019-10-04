@@ -94,6 +94,11 @@ config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) {
 }
 ```
 
+## Upgrading to version 3
+
+Default inflection header changed from `X-Inflect-With` to `Inflect-With`
+
+
 ## Troubleshooting
 
 We've seen folks raise issues that inbound transformations are not taking place. This is often due to the fact that OliveBranch, by default, is only transforming keys when a request's Content-Type is `application/json`.
