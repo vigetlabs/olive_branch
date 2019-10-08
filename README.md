@@ -96,8 +96,7 @@ config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) {
 
 ## Upgrading to version 3
 
-Default inflection header changed from `X-Inflect-With` to `Inflect-With`
-
+Default inflection header changed from `X-Key-Inflection` to `Key-Inflection`.
 
 ## Troubleshooting
 
