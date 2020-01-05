@@ -54,7 +54,7 @@ Default inflection header key can be changed like
 config.middleware.use OliveBranch::Middleware, inflection_header: 'Inflect-With'
 ```
 
-A default inflection can be specified so you don't have to include the `Key-Inflection` header on every request.
+A default inflection can be specified so you don't have to include the `Key-Inflection` header on every request. If you opt for default inflection, you may want to exclude the routes that Rails uses (see Filtering).
 
 ```ruby
 config.middleware.use OliveBranch::Middleware, inflection: 'camel'
@@ -92,6 +92,14 @@ Or response transforming
 config.middleware.use OliveBranch::Middleware, exclude_response: -> (env) {
   env['PATH_INFO'].match(/^\/do_not_transform/)
 }
+```
+
+#### Rails routes & Action Text
+
+If you're using default inflection, exclude the routes that Rails uses
+```ruby
+rails_routes = -> (env) { env['PATH_INFO'].match(/^\/rails/) }
+config.middleware.use OliveBranch::Middleware, inflection: "camel", exclude_params: rails_routes, exclude_response: rails_routes
 ```
 
 ## Upgrading to version 3
