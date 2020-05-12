@@ -13,11 +13,24 @@ This gem lets your API users pass in and receive camelCased or dash-cased keys, 
 gem "olive_branch"
 ```
 
-2. Add this to `config/applcation.rb`:
+2. Add this to `config/applcation.rb` if you want the clients to control the transformation behaviour through the `Key-Inflection` HTTP header sent by the client:
 
 ```ruby
 config.middleware.use OliveBranch::Middleware
 ```
+
+Alternative, if you want to always convert between snake_case and camelCase for your API and only your API, to keep Rubist and JavaScript developer's happy, use the following configuration:
+
+```ruby
+excluded_routes = ->(env) { !env["PATH_INFO"].match(%r{^/api}) }
+config.middleware.use OliveBranch::Middleware,
+                      inflection:         "camel",
+                      exclude_params:     excluded_routes,
+                      exclude_response:   excluded_routes,
+                      content_type_check: ->(content_type) { content_type == "application/json" }
+```
+
+in your `config/application.rb`.
 
 ## Use
 
