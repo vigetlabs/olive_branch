@@ -19,7 +19,7 @@ gem "olive_branch"
 config.middleware.use OliveBranch::Middleware
 ```
 
-Alternative, if you want to always convert between snake_case and camelCase for your API and only your API, to keep Rubist and JavaScript developer's happy, use the following configuration:
+Alternative, if you want to always convert between snake_case and camelCase for your API and only your API, to keep Rubyist and JavaScript developer's happy, use the following configuration:
 
 ```ruby
 excluded_routes = ->(env) { !env["PATH_INFO"].match(%r{^/api}) }
