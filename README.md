@@ -24,10 +24,9 @@ Alternative, if you want to always convert between snake_case and camelCase for 
 ```ruby
 excluded_routes = ->(env) { !env["PATH_INFO"].match(%r{^/api}) }
 config.middleware.use OliveBranch::Middleware,
-                      inflection:         "camel",
-                      exclude_params:     excluded_routes,
-                      exclude_response:   excluded_routes,
-                      content_type_check: ->(content_type) { content_type == "application/json" }
+                      inflection:       "camel",
+                      exclude_params:   excluded_routes,
+                      exclude_response: excluded_routes
 ```
 
 in your `config/application.rb`.
