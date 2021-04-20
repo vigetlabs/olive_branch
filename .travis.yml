@@ -6,16 +6,29 @@ rvm:
   - 2.4
   - 2.5
   - 2.6.1
+  - 2.7.3
 gemfile:
+  - gemfiles/rails_4.2.gemfile
   - gemfiles/rails_5.0.gemfile
   - gemfiles/rails_5.1.gemfile
   - gemfiles/rails_5.2.gemfile
+  - gemfiles/rails_6.0.gemfile
+  - gemfiles/rails_6.1.gemfile
 
-matrix:
-  include:
+jobs:
+  # Rails 6.0 requires 2.5 or newer
+  exclude:
     - rvm: 2.2
-      gemfile: gemfiles/rails_4.2.gemfile
-    - rvm: 2.2
-      gemfile: gemfiles/rails_4.1.gemfile
-    - rvm: 2.6.1
       gemfile: gemfiles/rails_6.0.gemfile
+    - rvm: 2.2
+      gemfile: gemfiles/rails_6.1.gemfile
+    - rvm: 2.3
+      gemfile: gemfiles/rails_6.0.gemfile
+    - rvm: 2.3
+      gemfile: gemfiles/rails_6.1.gemfile
+    - rvm: 2.4
+      gemfile: gemfiles/rails_6.0.gemfile
+    - rvm: 2.4
+      gemfile: gemfiles/rails_6.1.gemfile
+    - rvm: 2.7.3
+      gemfile: gemfiles/rails_4.2.gemfile
