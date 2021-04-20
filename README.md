@@ -39,7 +39,8 @@ For more examples, see [our blog post](https://www.viget.com/articles/introducin
 
 ## Optimizations and configuration
 
-`OliveBranch` uses `multi_json`, which will choose the fastest available JSON parsing library and use that. Combined with `Oj` can speed things up and save ~20% rails response time.
+`OliveBranch` uses `multi_json`, which will automatically choose the fastest available JSON parsing library present in your application.
+ Most Ruby applications default to using the JSON library that ships with Ruby.  However, by including a coder that `multi_json` considers faster, like [Oj](https://github.com/ohler55/oj) in your gemfile, you can potentially save up to ~20% response time.
 
 The middleware can be initialized with custom camelize/dasherize implementations, so if you know you have a fixed size set of keys, you can save a considerable amount of time by providing a custom camelize that caches like so:
 
