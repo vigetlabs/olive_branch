@@ -90,11 +90,16 @@ module OliveBranch
     end
 
     def exclude_response?(env, headers)
-      exclude?(env, headers["Content-Type"], @exclude_response)
+      exclude_rails_route?(env) ||
+        exclude?(env, headers['Content-Type'], @exclude_response)
     end
 
     def exclude?(env, content_type, block)
       !inflection_type(env) || !valid_content_type?(content_type) || block.call(env)
+    end
+
+    def exclude_rails_route?(env)
+      env['PATH_INFO'].to_s.start_with?('/rails')
     end
 
     def valid_content_type?(content_type)

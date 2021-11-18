@@ -290,6 +290,23 @@ RSpec.describe OliveBranch::Middleware do
       expect(JSON.parse(response.body)["post"]["author_name"]).not_to be_nil
     end
 
+    it 'excludes rails routes by default' do
+      app = lambda do |_env|
+        [
+          200,
+          { 'Content-Type' => 'application/json' },
+          ['{"direct_upload_token": "value1", "attachment_name": "value2"}']
+        ]
+      end
+
+      request = Rack::MockRequest.new(described_class.new(app))
+
+      response = request.get('/rails', 'HTTP_KEY_INFLECTION' => 'camel')
+
+      expect(JSON.parse(response.body)['direct_upload_token']).to eq 'value1'
+      expect(JSON.parse(response.body)['attachment_name']).to eq 'value2'
+    end
+
     it "does not modify response if not JSON " do
       app = -> (env) do
         [
